@@ -1,0 +1,3 @@
+[submodule "web-sugar"]
+	path = web-sugar
+	url = git@github.com:ForNetCode/web-sugar.git
