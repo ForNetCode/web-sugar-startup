@@ -1,6 +1,6 @@
 import sbt.*
 
-val scala3Version = "3.2.1"
+val scala3Version = "3.3.0"
 
 
 
@@ -21,7 +21,7 @@ lazy val root = project
     scalaVersion := scala3Version,
 
     libraryDependencies ++= Seq(
-      "org.eclipse.jetty" % "jetty-webapp" % "11.0.14" % "container;compile",
+      "org.eclipse.jetty" % "jetty-webapp" % "11.0.15" % "container;compile",
       "org.scalameta" %% "munit" % "0.7.29" % Test
     )
   ).enablePlugins (ScalatraPlugin).enablePlugins(JavaAppPackaging).dependsOn(webSugar)
