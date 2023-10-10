@@ -4,15 +4,15 @@ val scala3Version = "3.3.0"
 
 
 
-Compile / PB.targets := Seq(
-  scalapb.gen() -> (Compile / sourceManaged).value / "scalapb"
-)
+//Compile / PB.targets := Seq(
+//  scalapb.gen() -> (Compile / sourceManaged).value / "scalapb"
+//)
 
 //Compile / PB.protoSources += file("../protobuf")
 
 lazy val webSugar = RootProject(file("./web-sugar"))
 
-lazy val root = project
+lazy val backend = project
   .in(file("."))
   .settings(
     name := "web-sugar-startup",

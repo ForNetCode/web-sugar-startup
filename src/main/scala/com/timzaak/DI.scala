@@ -7,5 +7,6 @@ object DI {
   given config: Config = ConfigFactory.load()
 
   // init postgres
-  //object db extends DB
+  // object db extends DB
+  // give DB = db
 }

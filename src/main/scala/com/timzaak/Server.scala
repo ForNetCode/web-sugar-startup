@@ -32,23 +32,22 @@ import scala.concurrent.ExecutionContext
   //gServer.awaitTermination()
 }
 
-def grpcServer(config: Config) = {
-  val builder = NettyServerBuilder
-    .forPort(config.getOptional[Int]("server.grpc.port").getOrElse(9000))
-    //.addService(
-      //AuthGrpc.bindService(DI.authGRPCController, ExecutionContext.global)
-    //)
-    // .intercept(DI.authServiceInterceptor)
-
-  config.getOptional[String]("server.grpc.ssl.certChain") zip config
-    .getOptional[String]("server.grpc.ssl.privateKey") match {
-    case Some(certChain, privateKey) =>
-      builder.useTransportSecurity(File(certChain), File(privateKey))
-    case _ =>
-  }
-
-  builder.build().start()
-}
+//def grpcServer(config: Config) = {
+//  val builder = NettyServerBuilder
+//    .forPort(config.getOptional[Int]("server.grpc.port").getOrElse(9000))
+//    //.addService(
+//      //AuthGrpc.bindService(DI.authGRPCController, ExecutionContext.global)
+//    //)
+//    // .intercept(DI.authServiceInterceptor)
+//
+//  config.getOptional[String]("server.grpc.ssl.certChain") zip config
+//    .getOptional[String]("server.grpc.ssl.privateKey") match {
+//    case Some(certChain, privateKey) =>
+//      builder.useTransportSecurity(File(certChain), File(privateKey))
+//    case _ =>
+//  }
+//  builder.build().start()
+//}
 
 def webServer(config: Config) = {
   val port: Int = config.getOptional[Int]("server.web.port").getOrElse(8080)
