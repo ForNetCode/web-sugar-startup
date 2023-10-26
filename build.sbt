@@ -1,6 +1,6 @@
 import sbt.*
 
-val scala3Version = "3.3.0"
+val scala3Version = "3.3.1"
 
 
 
@@ -21,6 +21,7 @@ lazy val backend = project
     scalaVersion := scala3Version,
 
     libraryDependencies ++= Seq(
+      "org.postgresql" % "postgresql" % "42.6.0",
       "org.eclipse.jetty" % "jetty-webapp" % "11.0.15" % "container;compile",
       "org.scalameta" %% "munit" % "0.7.29" % Test
     )
