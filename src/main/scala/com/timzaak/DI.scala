@@ -1,10 +1,9 @@
 package com.timzaak
 
 import com.timzaak.dao.DB
-import com.typesafe.config.{Config, ConfigFactory}
+import very.util.config.WithConfig
 
-object DI {
-  given config: Config = ConfigFactory.load()
+object DI extends WithConfig {
 
   // init postgres
   // object db extends DB

@@ -10,6 +10,9 @@ val scala3Version = "3.3.1"
 
 //Compile / PB.protoSources += file("../protobuf")
 
+// change package zip name to app.zip
+Universal / packageName := "app"
+
 lazy val webSugar = RootProject(file("./web-sugar"))
 
 lazy val backend = project

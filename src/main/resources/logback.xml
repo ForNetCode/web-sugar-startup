@@ -13,8 +13,6 @@
         <appender-ref ref="STDOUT"/>
     </appender>
 
-    <logger name="org.eclipse.jetty" level="INFO"/>
-    <logger name="org.scalatra.servlet" level="INFO"/>
     <logger name="io.netty" level="INFO"/>
     <logger name="com.zaxxer.hikari" level="INFO"/>
     <logger name="io.grpc.netty" level="INFO"/>

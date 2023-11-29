@@ -1,88 +1,67 @@
 package com.timzaak
-import com.typesafe.config.Config
-import io.grpc.netty.NettyServerBuilder
-import jakarta.servlet.DispatcherType
-import org.eclipse.jetty.server.{Server, ServerConnector}
-import org.eclipse.jetty.servlet.{DefaultServlet, ServletHolder}
-import org.eclipse.jetty.util.ssl.SslContextFactory
-import org.eclipse.jetty.webapp.WebAppContext
-import org.scalatra.servlet.ScalatraListener
-import very.util.config.*
-import very.util.persistence.pgMigrate
-import very.util.web.SinglePageAppResourceService
 
-import java.io.File
-import java.util
-import java.util.concurrent.TimeUnit
-import scala.concurrent.ExecutionContext
+import sttp.tapir.*
+import sttp.tapir.server.netty.{NettyConfig, NettyFutureServer, NettyFutureServerInterpreter, NettyFutureServerOptions}
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{Await, Future}
+import sttp.tapir.json.circe.*
+import sttp.tapir.generic.auto.*
+import io.circe.generic.auto.*
+import sttp.tapir.Schema.annotations.{description, title}
+import sttp.tapir.server.interceptor.cors.{CORSConfig, CORSInterceptor}
+import sttp.tapir.swagger.bundle.SwaggerInterpreter
+
+import scala.concurrent.duration.*
 
 
-@main def serverRun: Unit = {
-  // PG database migrate
-  //pgMigrate(DI.config.getConfig("database.dataSource"))
+@description("Book entity customise description")
+case class Book(
+                 @description("title customise description")
+                 title: String, year: Option[Int])
 
 
-  val web = webServer(DI.config)
-  web.join()
+@main def app() = {
 
-  //val gServer = grpcServer(DI.config)
-  //sys.addShutdownHook {
-  //  gServer.shutdown()
-  //}
-  //gServer.awaitTermination()
-}
+  val ping = endpoint
+    .get
+    .in("ping")
+    .out(stringBody)
 
-//def grpcServer(config: Config) = {
-//  val builder = NettyServerBuilder
-//    .forPort(config.getOptional[Int]("server.grpc.port").getOrElse(9000))
-//    //.addService(
-//      //AuthGrpc.bindService(DI.authGRPCController, ExecutionContext.global)
-//    //)
-//    // .intercept(DI.authServiceInterceptor)
-//
-//  config.getOptional[String]("server.grpc.ssl.certChain") zip config
-//    .getOptional[String]("server.grpc.ssl.privateKey") match {
-//    case Some(certChain, privateKey) =>
-//      builder.useTransportSecurity(File(certChain), File(privateKey))
-//    case _ =>
-//  }
-//  builder.build().start()
-//}
-
-def webServer(config: Config) = {
-  val port: Int = config.getOptional[Int]("server.web.port").getOrElse(8080)
-  val server = Server(port)
-
-  // http ssl config
-  // https://www.ibm.com/docs/pt/rational-change/5.3.0?topic=813-configuring-jetty-run-in-httpsssl-mode
-  // val ssl = SslContextFactory.Server()
-  // ssl.setKeyStorePath("")
-  // ssl.setKeyStorePassword()
-  // val connector = ServerConnector(server,ssl)
-
-  val context = WebAppContext()
+  val postBody = endpoint.post.in("body").in(
+    jsonBody[Book].description("parameter customise description")
+  ).out(stringBody)
 
 
-  context.addEventListener(new ScalatraListener)
+  val myEndpoints: List[AnyEndpoint] = List(ping, postBody)
+  val swaggerEndpoints = SwaggerInterpreter().fromEndpoints[Future](myEndpoints, "My App", "1.0")
+  val swaggerRoute = NettyFutureServerInterpreter().toRoute(swaggerEndpoints)
 
-  config.getOptional[String]("server.web.staticWeb") match {
-    case Some(staticWebPath) =>
-      context.setResourceBase(staticWebPath)
-      val holder = ServletHolder(DefaultServlet(SinglePageAppResourceService()))
-      context.addServlet(holder, "/")
-    // context.addServlet(classOf[DefaultServlet], "/")
-    case _ => // do nothing
-  }
 
-  context.setInitParameter(
-    ScalatraListener.LifeCycleKey,
-    "com.timzaak.ScalatraBootstrap"
-  )
-  // val keyCloakFilter = KeycloakOIDCFilter()
+  // https://github.com/softwaremill/tapir/issues/3225
+  val serverConfig = NettyConfig.defaultNoStreaming
+    .port(DI.config.getInt("server.web.port"))
+    .copy(requestTimeout = None, socketTimeout = None)
 
-  // context.addFilter(classOf[org.keycloak])
-  server.setHandler(context)
-  server.setStopAtShutdown(true)
-  server.start()
-  server
+  val serverOptions  = NettyFutureServerOptions.default.prependInterceptor(
+    CORSInterceptor.customOrThrow(CORSConfig.default))
+
+  val serverBinding =
+    Await.result(
+    NettyFutureServer(serverOptions, serverConfig)
+    .addEndpoint(ping.serverLogicSuccess(_ => Future.successful("pong")))
+    .addEndpoint(postBody.serverLogicSuccess(v => Future.successful("year")))
+    .addRoute(swaggerRoute)
+    .start(),
+      Duration.Inf
+    )
+
+  val port = serverBinding.port
+  val host = serverBinding.hostName
+  println(s"Server started at port = ${serverBinding.port}")
+
+  println("Press ENTER to stop the server...")
+  scala.io.StdIn.readLine
+  Await.result(serverBinding.stop(), Duration.Inf)
+
 }
