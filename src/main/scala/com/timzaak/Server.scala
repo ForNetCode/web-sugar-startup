@@ -8,10 +8,14 @@ import scala.concurrent.{Await, Future}
 import sttp.tapir.json.circe.*
 import sttp.tapir.generic.auto.*
 import io.circe.generic.auto.*
+import sttp.apispec.{SecurityScheme, Tag}
+import sttp.apispec.openapi.Components
+import sttp.tapir.EndpointInput.AuthInfo
 import sttp.tapir.Schema.annotations.{description, title}
 import sttp.tapir.server.interceptor.cors.{CORSConfig, CORSInterceptor}
-import sttp.tapir.swagger.bundle.SwaggerInterpreter
+import sttp.tapir.redoc.bundle.RedocInterpreter
 
+import scala.collection.immutable.ListMap
 import scala.concurrent.duration.*
 
 
@@ -24,22 +28,61 @@ case class Book(
 @main def app() = {
 
   val ping = endpoint
+    .summary("Health Check")
+    .tag("Health")
+    .name("Ping Name") // does not work
+    .description("endpoint description")
     .get
     .in("ping")
     .out(stringBody)
+    .serverLogicSuccess(_ => Future.successful("pong"))
+
 
   val postBody = endpoint.post.in("body").in(
     jsonBody[Book].description("parameter customise description")
-  ).out(stringBody)
+  ).summary("Test Auth")
+    .securityIn(auth.apiKey(header[String]("api_key"))
+      .copy(info = AuthInfo.Empty.securitySchemeName("api_key")))
+    .serverSecurityLogicSuccess(_ => Future.successful(()))
+    .out(stringBody)
+    .serverLogicSuccess(_ => v => Future.successful("year"))
 
 
-  val myEndpoints: List[AnyEndpoint] = List(ping, postBody)
-  val swaggerEndpoints = SwaggerInterpreter().fromEndpoints[Future](myEndpoints, "My App", "1.0")
+
+
+  val swaggerEndpoints = RedocInterpreter(
+    customiseDocsModel = openAPI => {
+      openAPI.tags(List(Tag("Health", description = Some("Tag Description"))))
+        .components(openAPI.components.get.copy(
+          securitySchemes = ListMap("api_key" -> Right(SecurityScheme(
+            "apiKey",
+            description = None,
+            name = Some("api_key"),
+            in = Some("header"),
+            scheme = None,
+            bearerFormat = None,
+            flows = None, openIdConnectUrl = None,
+          )))
+        ))
+        /*
+        .components(Components(securitySchemes = ListMap("api_key" -> Right(SecurityScheme(
+          "apiKey",
+          description = None,
+          name = Some("api_key"),
+          in = Some("header"),
+          scheme = None,
+          bearerFormat = None,
+          flows = None, openIdConnectUrl = None,
+        )))))*/
+    }
+  )
+    .fromServerEndpoints[Future](List(ping, postBody), "My App", "1.0")
+
   val swaggerRoute = NettyFutureServerInterpreter().toRoute(swaggerEndpoints)
 
 
   // https://github.com/softwaremill/tapir/issues/3225
-  val serverConfig = NettyConfig.defaultNoStreaming
+  val serverConfig = NettyConfig.default
     .port(DI.config.getInt("server.web.port"))
     .copy(requestTimeout = None, socketTimeout = None)
 
@@ -49,10 +92,9 @@ case class Book(
   val serverBinding =
     Await.result(
     NettyFutureServer(serverOptions, serverConfig)
-    .addEndpoint(ping.serverLogicSuccess(_ => Future.successful("pong")))
-    .addEndpoint(postBody.serverLogicSuccess(v => Future.successful("year")))
-    .addRoute(swaggerRoute)
-    .start(),
+      .addEndpoints(List(ping, postBody))
+      .addRoute(swaggerRoute)
+      .start(),
       Duration.Inf
     )
 
@@ -60,8 +102,9 @@ case class Book(
   val host = serverBinding.hostName
   println(s"Server started at port = ${serverBinding.port}")
 
-  println("Press ENTER to stop the server...")
-  scala.io.StdIn.readLine
-  Await.result(serverBinding.stop(), Duration.Inf)
+  // This would stop server in docker image
+  //println("Press ENTER to stop the server...")
+  //scala.io.StdIn.readLine
+  //Await.result(serverBinding.stop(), Duration.Inf)
 
 }
