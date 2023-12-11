@@ -1,18 +1,18 @@
 package com.timzaak
 
 import sttp.tapir.*
-import sttp.tapir.server.netty.{NettyConfig, NettyFutureServer, NettyFutureServerInterpreter, NettyFutureServerOptions}
+import sttp.tapir.server.pekkohttp.PekkoHttpServerInterpreter
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 import sttp.tapir.json.circe.*
 import sttp.tapir.generic.auto.*
 import io.circe.generic.auto.*
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.http.scaladsl.*
 import sttp.apispec.{SecurityScheme, Tag}
 import sttp.apispec.openapi.Components
 import sttp.tapir.EndpointInput.AuthInfo
 import sttp.tapir.Schema.annotations.{description, title}
-import sttp.tapir.server.interceptor.cors.{CORSConfig, CORSInterceptor}
 import sttp.tapir.redoc.bundle.RedocInterpreter
 
 import scala.collection.immutable.ListMap
@@ -26,11 +26,15 @@ case class Book(
 
 
 @main def app() = {
+  val actorSystem: ActorSystem = ActorSystem()
+  given ActorSystem = actorSystem
+
+  import actorSystem.dispatcher
 
   val ping = endpoint
     .summary("Health Check")
     .tag("Health")
-    .name("Ping Name") // does not work
+    .name("Ping Name") // this is for request log
     .description("endpoint description")
     .get
     .in("ping")
@@ -46,9 +50,6 @@ case class Book(
     .serverSecurityLogicSuccess(_ => Future.successful(()))
     .out(stringBody)
     .serverLogicSuccess(_ => v => Future.successful("year"))
-
-
-
 
   val swaggerEndpoints = RedocInterpreter(
     customiseDocsModel = openAPI => {
@@ -78,33 +79,13 @@ case class Book(
   )
     .fromServerEndpoints[Future](List(ping, postBody), "My App", "1.0")
 
-  val swaggerRoute = NettyFutureServerInterpreter().toRoute(swaggerEndpoints)
+  val swaggerRoute = PekkoHttpServerInterpreter().toRoute(List(ping, postBody):::swaggerEndpoints)
 
+  val serverBinding = Http().newServerAt("0.0.0.0", DI.config.getInt("server.web.port"))
+    .bindFlow(swaggerRoute)
+    .map{_ =>
+    println("init server successful")
+  }
 
-  // https://github.com/softwaremill/tapir/issues/3225
-  val serverConfig = NettyConfig.default
-    .port(DI.config.getInt("server.web.port"))
-    .copy(requestTimeout = None, socketTimeout = None)
-
-  val serverOptions  = NettyFutureServerOptions.default.prependInterceptor(
-    CORSInterceptor.customOrThrow(CORSConfig.default))
-
-  val serverBinding =
-    Await.result(
-    NettyFutureServer(serverOptions, serverConfig)
-      .addEndpoints(List(ping, postBody))
-      .addRoute(swaggerRoute)
-      .start(),
-      Duration.Inf
-    )
-
-  val port = serverBinding.port
-  val host = serverBinding.hostName
-  println(s"Server started at port = ${serverBinding.port}")
-
-  // This would stop server in docker image
-  //println("Press ENTER to stop the server...")
-  //scala.io.StdIn.readLine
-  //Await.result(serverBinding.stop(), Duration.Inf)
-
+  //Await.result(serverBinding.transformWith { r => actorSystem.terminate().transform(_ => r) }, 1.minute)
 }
