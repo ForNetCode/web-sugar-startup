@@ -45,38 +45,13 @@ case class Book(
   val postBody = endpoint.post.in("body").in(
     jsonBody[Book].description("parameter customise description")
   ).summary("Test Auth")
-    .securityIn(auth.apiKey(header[String]("api_key"))
-      .copy(info = AuthInfo.Empty.securitySchemeName("api_key")))
+    .tag("Book")
+    .securityIn(auth.apiKey(header[String]("api_key")).securitySchemeName("api_key"))
     .serverSecurityLogicSuccess(_ => Future.successful(()))
     .out(stringBody)
     .serverLogicSuccess(_ => v => Future.successful("year"))
 
-  val swaggerEndpoints = RedocInterpreter(
-    customiseDocsModel = openAPI => {
-      openAPI.tags(List(Tag("Health", description = Some("Tag Description"))))
-        .components(openAPI.components.get.copy(
-          securitySchemes = ListMap("api_key" -> Right(SecurityScheme(
-            "apiKey",
-            description = None,
-            name = Some("api_key"),
-            in = Some("header"),
-            scheme = None,
-            bearerFormat = None,
-            flows = None, openIdConnectUrl = None,
-          )))
-        ))
-        /*
-        .components(Components(securitySchemes = ListMap("api_key" -> Right(SecurityScheme(
-          "apiKey",
-          description = None,
-          name = Some("api_key"),
-          in = Some("header"),
-          scheme = None,
-          bearerFormat = None,
-          flows = None, openIdConnectUrl = None,
-        )))))*/
-    }
-  )
+  val swaggerEndpoints = RedocInterpreter()
     .fromServerEndpoints[Future](List(ping, postBody), "My App", "1.0")
 
   val swaggerRoute = PekkoHttpServerInterpreter().toRoute(List(ping, postBody):::swaggerEndpoints)
