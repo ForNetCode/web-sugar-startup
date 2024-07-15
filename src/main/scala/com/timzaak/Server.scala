@@ -84,7 +84,6 @@ case class Book(
   // https://github.com/softwaremill/tapir/issues/3225
   val serverConfig = NettyConfig.default
     .port(DI.config.getInt("server.web.port"))
-    .copy(requestTimeout = None, socketTimeout = None)
 
   val serverOptions  = NettyFutureServerOptions.default.prependInterceptor(
     CORSInterceptor.customOrThrow(CORSConfig.default))
