@@ -24,8 +24,7 @@ lazy val backend = project
     scalaVersion := scala3Version,
 
     libraryDependencies ++= Seq(
-      "org.postgresql" % "postgresql" % "42.6.0",
-      "org.eclipse.jetty" % "jetty-webapp" % "11.0.15" % "container;compile",
-      "org.scalameta" %% "munit" % "0.7.29" % Test
+      "org.postgresql" % "postgresql" % "42.7.3",
+      "org.scalameta" %% "munit" % "1.0.0" % Test
     )
   ).enablePlugins (ScalatraPlugin).enablePlugins(JavaAppPackaging).dependsOn(webSugar)
