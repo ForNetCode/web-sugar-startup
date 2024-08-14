@@ -1,10 +1,16 @@
 package com.timzaak.bash
 
 import com.typesafe.config.ConfigFactory
+import very.util.persistence.pgMigrate
 import very.util.persistence.scalikejdbc.mapper.{CodeGenerator, DateTimeClass, GeneratorConfig, Model}
 
 object EntityGenerate {
-  def main(args: Array[String]): Unit = {
+
+  @main def dbMigrate = {
+    pgMigrate(ConfigFactory.load().getConfig("db.default"))
+  }
+
+  @main def generateEntity: Unit = {
     val config = ConfigFactory.load()
     val url = config.getString("db.default.url")
     val username = config.getString("db.default.user")
@@ -30,4 +36,5 @@ object EntityGenerate {
       }
     }
   }
+
 }
