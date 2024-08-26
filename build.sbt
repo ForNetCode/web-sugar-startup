@@ -1,6 +1,6 @@
 import sbt.*
 
-val scala3Version = "3.4.0"
+val scala3Version = "3.5.0"
 
 
 
