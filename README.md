@@ -13,6 +13,13 @@ sbt run
 `com.timzaak.DI` init all class, It's [`cake pattern`](https://www.baeldung.com/scala/cake-pattern), you can use macwire
 to do the same thing.
 
+## OpenAPI
+We use `redoc` to viewer OpenAPI. 
+
+viewer url is: `http://127.0.0.1:8080/docs/index.html`
+
+yaml file url is: `http://127.0.0.1:8080/docs/docs.yaml` 
+
 
 ## OpenTelemetry
 It's an example of how to use openTelemetry java agent in IDEA, should not be used in production environment.
