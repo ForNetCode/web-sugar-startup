@@ -85,7 +85,7 @@ case class Book(
   val serverConfig = NettyConfig.default
     .port(DI.config.getInt("server.web.port"))
 
-  val serverOptions  = NettyFutureServerOptions.default.prependInterceptor(
+  val serverOptions = NettyFutureServerOptions.default.prependInterceptor(
     CORSInterceptor.customOrThrow(CORSConfig.default))
 
   val serverBinding =
@@ -100,10 +100,4 @@ case class Book(
   val port = serverBinding.port
   val host = serverBinding.hostName
   println(s"Server started at port = ${serverBinding.port}")
-
-  // This would stop server in docker image
-  //println("Press ENTER to stop the server...")
-  //scala.io.StdIn.readLine
-  //Await.result(serverBinding.stop(), Duration.Inf)
-
 }

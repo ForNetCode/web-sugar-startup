@@ -22,7 +22,7 @@ Universal / mappings := {
 }
 
 // exclude config files from jar
-unmanagedResources / excludeFilter := HiddenFileFilter || "*.conf"
+unmanagedResources / excludeFilter := "*.conf"
 
 lazy val webSugar = RootProject(file("./web-sugar"))
 
@@ -38,5 +38,5 @@ lazy val backend = project
     ),
     // Compile / mainClass := Some("com.timzaak.app")
   )
-  .enablePlugins(JavaAppPackaging)
+  .enablePlugins(JavaServerAppPackaging)
   .dependsOn(webSugar)
