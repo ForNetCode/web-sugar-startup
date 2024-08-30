@@ -59,4 +59,34 @@ class JCasbinSuite extends FunSuite {
     assert(enforcer.enforce("alice", "data2", "write"))
     assert(enforcer.enforce("alice", "data1", "read"))
   }
+
+  test("simple rbac with root") {
+    val model = """[request_definition]
+        |r = sub, obj
+        |
+        |[policy_definition]
+        |p = sub, obj
+        |
+        |[role_definition]
+        |g = _, _
+        |
+        |[policy_effect]
+        |e = some(where (p.eft == allow))
+        |
+        |[matchers]
+        |m = g(r.sub, p.sub) && r.obj == p.obj || r.sub == "root"
+        |""".stripMargin
+
+      val csv =
+        """p, alice, delete_order
+          |g, alice, rule_1
+          |g, alice, rule_2
+          |p, rule_1, delete_order2
+          |""".stripMargin
+    val enforcer = getEnforcer(model, csv)
+
+    assert(enforcer.enforce("alice", "delete_order2"))
+    assert(enforcer.enforce("root", "delete_order2"))
+
+  }
 }
