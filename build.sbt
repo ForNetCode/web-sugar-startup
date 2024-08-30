@@ -34,6 +34,7 @@ lazy val backend = project
     scalaVersion := scala3Version,
     libraryDependencies ++= Seq(
       "org.postgresql" % "postgresql" % "42.7.3",
+      "org.casbin" % "jcasbin" % "1.55.0",
       "org.scalameta" %% "munit" % "1.0.0" % Test
     ),
     // Compile / mainClass := Some("com.timzaak.app")
