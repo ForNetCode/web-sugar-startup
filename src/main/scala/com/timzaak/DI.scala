@@ -3,8 +3,11 @@ package com.timzaak
 import very.util.config.WithConfig
 
 object DI extends WithConfig {
-
-  // init postgres
+  // init postgres database
+  // import com.timzaak.dao.DB
   // object db extends DB
-  // give DB = db
+  // given DB = db
+
+  // ConnectionPool.get().dataSource // This is to get javax.sql.DataSource
+
 }
