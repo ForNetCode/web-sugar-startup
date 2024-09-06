@@ -9,7 +9,7 @@ npm install --save zustand
 
 # https://tanstack.com/ TanStack Router 采用file base 录用
 npm i --save @tanstack/react-router @tanstack/router-devtools
-npm i --save-dev @tanstack/router-plugin/vite
+npm install --save-dev @tanstack/router-vite-plugin
 
 # https://ui.shadcn.com/docs/installation/vite shadcn/ui tailwind UI库
 
