@@ -7,4 +7,7 @@ Dubbo 3.x 可基于 Grpc 来做，还内置断流、熔断等微服务常用功�
 ## Config 和 Service Discovery
 国外Consul，国内 Nacos。
 
+## SideCar 模式下的微服务
+SideCar 增加的中网络包二次流转开销无法忽略。 RPC 框架的多语言支持与功能迭代最终会胜过 SideCar模式
+
 
