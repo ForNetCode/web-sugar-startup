@@ -1,4 +1,5 @@
 ### Web Starter
+#### SPA
 基于 Vite + Typescript + React 构建项目：
 ```shell
 # https://vitejs.dev/guide/  init react-ts project
@@ -102,3 +103,12 @@ token = "admin_token"
 ```shell
 docker run -d --network=host -v $(pwd)/config.toml:/config/config.toml  -v $(pwd)/data:/server/data --name=spa-server ghcr.nju.edu.cn/fornetcode/spa-server:v2.4.0
 ```
+
+#### SSR
+有两种解决方案，一种走 NextJS，一种走Vite。
+
+Vite 的方案是通过条件让用户自行决定，哪些走Server端，哪些走客户端，同时提供SPA的开发体验，简单、粗暴、快捷。
+
+NextJS提供大量的优化功能，例如字体预处理等，但复杂度高，耦合性高，要用大量它的组件。
+
+若追求极致，还是要走NextJS的方案。
