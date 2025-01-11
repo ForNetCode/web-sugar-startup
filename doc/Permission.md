@@ -18,4 +18,4 @@ keycloak 支持 OpenID + Permission。
 
 比对了其它的 SSO，其实相差不大，功能丰富度上还是 keycloak 多，也更难用，尤其对小白来讲。
 
-所以 Keycloak 实际并不好用，还是自行构建个简单的比较靠谱。
+所以 Keycloak 实际并不好用，还是自行构建个简单的，然后补充一个OAuth2.0插件库比较靠谱。
