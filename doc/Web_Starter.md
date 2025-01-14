@@ -19,9 +19,7 @@ npm install --save react-hook-form zod
 
 # https://github.com/pimterry/loglevel loglevel 日志
 npm isntall --save loglevel
-
 ```
-
 `vite.config.ts` 此仅供参考
 ```typescript
 /// <reference types="vitest" />
@@ -48,6 +46,9 @@ export default defineConfig({
   base: './',
 })
 ```
+
+基于 Vite + Typescript + Refine + Ant Design 构建项目：
+参考： refine.dev/docs/getting-started/quickstart/#using-browser 
 
 
 #### spa-server integration
