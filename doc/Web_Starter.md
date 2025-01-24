@@ -18,7 +18,7 @@ npm install --save-dev @tanstack/router-vite-plugin
 npm install --save react-hook-form zod
 
 # https://github.com/pimterry/loglevel loglevel 日志
-npm isntall --save loglevel
+npm install --save loglevel
 ```
 `vite.config.ts` 此仅供参考
 ```typescript
@@ -48,13 +48,17 @@ export default defineConfig({
 ```
 
 基于 Vite + Typescript + Refine + Ant Design 构建项目：
-参考： refine.dev/docs/getting-started/quickstart/#using-browser 
-
+参考：refine.dev/docs/getting-started/quickstart/#using-browser
+项目结构基本都有了，可以用来快速构建简易项目。
+```shell
+npm install --save loglevel zustand
+npm install --save-dev dotenv-cli cross-var
+```
 
 #### spa-server integration
 ##### install npm packages
 ```shell
-npm install --save-dev dotenv-cli cross-var spa-client
+npm install --save-dev cross-var spa-client
 ```
 `.env` config
 ```ini

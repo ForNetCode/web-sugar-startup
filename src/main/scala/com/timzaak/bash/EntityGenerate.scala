@@ -2,39 +2,32 @@ package com.timzaak.bash
 
 import com.typesafe.config.ConfigFactory
 import very.util.persistence.pgMigrate
-import very.util.persistence.scalikejdbc.mapper.{CodeGenerator, DateTimeClass, GeneratorConfig, Model}
+
+import very.util.persistence.transfer.*
 
 object EntityGenerate {
 
   @main def dbMigrate = {
-    pgMigrate(ConfigFactory.load().getConfig("db.default"))
+    val config = ConfigFactory.load().getConfig("db")
+    pgMigrate(config)
   }
 
   @main def generateEntity: Unit = {
     val config = ConfigFactory.load()
-    val url = config.getString("db.default.url")
-    val username = config.getString("db.default.user")
-    val password = config.getString("db.default.password")
-    val driver = config.getString("db.default.driver")
-    Class.forName(driver)
-
+    val url = config.getString("db.url")
+    val username = config.getString("db.user")
+    val password = config.getString("db.password")
     val model = Model(url, username, password)
-
-    val generatorConfig = GeneratorConfig(
-      packageName = "com.timzaak.entity",
-      dateTimeClass = DateTimeClass.OffsetDateTime,
-      daoExtendImport = Some("very.util.persistence.scalikejdbc.Dao")
-    )
-    // where table to generate
-    val tables:Map[String, String] = Map(
-      //      "consignor"-> "Consignor",
-      //      "fee_config" -> "FeeConfig",
-    )
-    model.allTables("public").foreach { table =>
-      if (tables.contains(table.name)) {
-        new CodeGenerator(table, None)(generatorConfig.copy(tableNameToClassName = (a: String) => tables(a))).writeModel()
+    model.allTables().foreach { table =>
+      if (table.name != "flyway_schema_history") {
+        ScalasqlEntityParser
+          .fromTable(Dialect.Postgres, table, "com.timzaak.dao")
+          .writeToFile("./src/main/scala")
       }
     }
+    // val driver = config.getString("db.driver")
+    // Class.forName(driver)
+
   }
 
 }

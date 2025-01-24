@@ -2,6 +2,8 @@ import sbt.*
 
 val scala3Version = "3.6.2"
 
+import Dependencies.*
+
 //Compile / PB.targets := Seq(
 //  scalapb.gen() -> (Compile / sourceManaged).value / "scalapb"
 //)
@@ -21,10 +23,14 @@ Universal / mappings := {
   }
 }
 
+// enumeration need this
+ThisBuild / scalacOptions ++= Seq("-Yretain-trees")
+
 // exclude config files from jar
-unmanagedResources / excludeFilter := "*.conf"
+// unmanagedResources / excludeFilter := "*.conf"
 
 lazy val webSugar = RootProject(file("./web-sugar"))
+lazy val table2Case = RootProject(file("./table2case"))
 
 lazy val backend = project
   .in(file("."))
@@ -32,12 +38,12 @@ lazy val backend = project
     name := "web-sugar-startup",
     version := "0.1.0",
     scalaVersion := scala3Version,
-    libraryDependencies ++= Seq(
-      "org.postgresql" % "postgresql" % "42.7.4",
-      "org.casbin" % "jcasbin" % "1.78.0",
+    libraryDependencies ++= wxLib ++ Seq(
+      "org.postgresql" % "postgresql" % "42.7.5",
+      "org.casbin" % "jcasbin" % "1.79.0" % Test,
       "org.scalameta" %% "munit" % "1.0.4" % Test
     ),
     // Compile / mainClass := Some("com.timzaak.app")
   )
   .enablePlugins(JavaServerAppPackaging)
-  .dependsOn(webSugar)
+  .dependsOn(webSugar, table2Case)

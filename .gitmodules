@@ -1,3 +1,6 @@
 [submodule "web-sugar"]
 	path = web-sugar
 	url = git@github.com:ForNetCode/web-sugar.git
+[submodule "table2case"]
+	path = table2case
+	url = git@github.com:timzaak/table2case.git

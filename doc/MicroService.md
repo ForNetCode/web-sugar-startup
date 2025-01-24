@@ -2,7 +2,7 @@
 目前有两个选项，Higress 和 Envoy APIGateway，底层都基于 Envoy， 两者都专注于K8S集群，但 Higress 还提供 standalone 部署模式，也有WAF插件，对 Dubbo、Nacos 的支持性更好。
 
 ## RPC
-Dubbo 3.x 可基于 Grpc 来做，Java 版本内置断流、熔断等微服务常用功能，可以看作包含微服务治理的GRPC，市面上未有其类似基于Protobuf的竞品。 Dubbo 的其余编程语言重心主要在Go上，Rust 和 NodeJS 功能还较为孱弱，相比于开源方案叠加了 Nacos 集成 和 简单路由控制。
+Dubbo 3.x 可基于 Grpc 来做，Java 版本内置断流、熔断等微服务常用功能，可以看作包含微服务治理的GRPC。 Dubbo 的其余编程语言重心主要在Go上，Rust 和 NodeJS 功能还较为孱弱，相比于开源方案叠加了 Nacos 集成 和 简单路由控制。
 
 ## Config 和 Service Discovery
 国外Consul，国内 Nacos，国内云平台会提供 Nacos 
