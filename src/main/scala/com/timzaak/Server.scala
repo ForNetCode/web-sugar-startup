@@ -25,6 +25,7 @@ import scala.concurrent.duration.*
       .out(stringBody)
       .serverLogicSuccessPure(_ => "pong"),
     authCtrl.test,
+    authCtrl.session,
   )
 
   val swaggerRoute = NettyFutureServerInterpreter().toRoute(

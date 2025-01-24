@@ -19,13 +19,13 @@ keycloak 提供 policy enforcer 鉴权方案，但实际用的时候，policy en
 
 集成可以基于 pac4j 来做，Keycloak 官方已不再支持 keycloak-java-adapter。
 对于前后端分离的项目，最简单的 Auth 对接方案
-1. 在keycloak上，针对前端创建 clientId, `Client authentication` 为 Off。清理 `client Scopes` 只保留 roles 和 {clientId}-dedicated。
+1. 在keycloak上，针对前端创建 clientId, `Client authentication` 为 Off。清理 `Client scopes` 只保留 roles、{clientId}-dedicated、profile。
 2. 前端引入 keycloak-js package，并将从 keycloak 获取的 Token 作为 `Authorization: Bearer {Token}` 传递后端。
 3. 后端通过 {keycloak-base-url}/realms/{realm}/protocol/openid-connect/certs 获取 JWKS, 并进行校验。可获得 OpenId + Role
 
 针对 Token 使用优化点可以有：
 1. 后端 增加 Token => (OpenId, roles) Cache
-2. 后端依据 Token 获取信息验证后，重新生成 简短有时效Token => (OpenId,  roles) 映射，回传新 Token 给前端使用。
+2. 后端依据 Token 获取信息验证后，重新生成 sessionId => (OpenId,  roles) 映射，前端只需要使用SessionId 即可。
 
 参考： 
 [Keycloak 插件开发系列](https://github.com/kavahub/keycloak?tab=readme-ov-file)

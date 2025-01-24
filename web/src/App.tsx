@@ -36,7 +36,8 @@ import {
   BlogPostShow,
 } from "./pages/blog-posts";
 import { Login } from "./pages/login";
-import axiosInstance from "./api/dataProvider";
+import axiosInstance, {registerSession} from "./api/dataProvider";
+import keycloak from './api/keycloak'
 
 function App() {
   const { keycloak, initialized } = useKeycloak();
@@ -78,11 +79,9 @@ function App() {
     },
     check: async () => {
       try {
-        const { token } = keycloak;
+        const { sessionId:token } = keycloak;
         if (token) {
-          axios.defaults.headers.common = {
-            Authorization: `Bearer ${token}`,
-          };
+          await registerSession()
           return {
             authenticated: true,
           };

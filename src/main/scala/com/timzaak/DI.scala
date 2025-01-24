@@ -1,7 +1,12 @@
 package com.timzaak
 
 import com.timzaak.controller.AuthCtrl
-import redis.clients.jedis.{DefaultJedisClientConfig, HostAndPort, JedisPooled, Protocol}
+import redis.clients.jedis.{
+  DefaultJedisClientConfig,
+  HostAndPort,
+  JedisPooled,
+  Protocol
+}
 import very.util.config.WithConfig
 import io.circe.generic.auto.*
 import io.circe.config.syntax.*
@@ -9,6 +14,7 @@ import scalasql.*
 import scalasql.PostgresDialect.*
 import very.util.keycloak.TapirOIDCAdapter
 import very.util.task.WithQuartz
+import very.util.web.RedisSession
 
 object DI extends WithQuartz with WithConfig {
   // init postgres database
@@ -32,7 +38,7 @@ object DI extends WithQuartz with WithConfig {
   protected lazy val jedisPool = JedisPooled(
     HostAndPort(
       config.getString("redis.host"),
-      Option(config.getInt("redis.port")).getOrElse(Protocol.DEFAULT_PORT)
+      config.as[Int]("redis.port").getOrElse(Protocol.DEFAULT_PORT)
     ),
     DefaultJedisClientConfig
       .builder()
@@ -42,12 +48,13 @@ object DI extends WithQuartz with WithConfig {
       .build()
   )
 
-  // object sessionProvider extends RedisSession[UserInfo](jedisPool)
+  given _adminSessionProvider: AdminSessionProvider =
+    new RedisSession[AdminUserInfo](jedisPool) {}
 
   object oidcAdapter extends TapirOIDCAdapter()
-  
+
   given TapirOIDCAdapter = oidcAdapter
-  
+
   object authCtrl extends AuthCtrl
 
   // wx
