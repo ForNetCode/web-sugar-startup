@@ -4,7 +4,7 @@ This is a startup template for [web-sugar](https://github.com/ForNetCode/web-sug
 ```shell
 git clone --recursive git@github.com:ForNetCode/web-sugar-startup.git
 cd web-sugar-startup
-sbt run -Dconfig.file=src/main/resources/application.conf  # -Dlogback.configurationFile=src/main/resources/logback.xml
+sbt run # -Dconfig.file=src/main/resources/application.conf -Dlogback.configurationFile=src/main/resources/logback.xml
 ```
 
 

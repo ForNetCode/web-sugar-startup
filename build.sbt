@@ -27,7 +27,11 @@ Universal / mappings := {
 ThisBuild / scalacOptions ++= Seq("-Yretain-trees")
 
 // exclude config files from jar
-// unmanagedResources / excludeFilter := "*.conf"
+unmanagedResources / excludeFilter := "*.conf"
+fork := true
+javaOptions ++= Seq(
+  "-Dconfig.file=src/main/resources/application.conf", // JVM argument example
+)
 
 lazy val webSugar = RootProject(file("./web-sugar"))
 lazy val table2Case = RootProject(file("./table2case"))
