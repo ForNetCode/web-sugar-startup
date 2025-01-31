@@ -118,7 +118,7 @@ function App() {
       return null;
     },
   };
-
+  //dataProvider={dataProvider(import.meta.env.VITE_API_URL, axiosInstance)}
   return (
     <BrowserRouter>
       <GitHubBanner />
@@ -127,7 +127,7 @@ function App() {
           <AntdApp>
             <DevtoolsProvider>
               <Refine
-                dataProvider={dataProvider(import.meta.env.VITE_API_URL, axiosInstance)}
+                dataProvider={dataProvider('https://api.fake-rest.refine.dev', axiosInstance)}
                 notificationProvider={useNotificationProvider}
                 authProvider={authProvider}
                 routerProvider={routerBindings}

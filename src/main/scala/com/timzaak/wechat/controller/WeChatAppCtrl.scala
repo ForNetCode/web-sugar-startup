@@ -7,14 +7,15 @@ import com.github.binarywang.wxpay.bean.result.WxPayUnifiedOrderV3Result.JsapiRe
 import com.github.binarywang.wxpay.bean.result.enums.TradeTypeEnum
 import com.github.binarywang.wxpay.service.WxPayService
 import com.timzaak.dao.PayChannel.WeChat
-import com.timzaak.dao.{ Account, Order, PayInfo }
+import com.timzaak.dao.{ Account, Order, PayInfo, RefundStatus, Refund }
 import com.timzaak.wechat.controller.basic.{ BadRequest, WXAppBasicController }
 import scalasql.*
 import sttp.model.HeaderNames
 import sttp.tapir.*
 import io.scalaland.chimney.dsl.*
-import io.circe.generic.auto.{ given, * }
+import io.circe.generic.auto.{ *, given }
 import sttp.tapir.generic.auto.*
+import very.util.persistence.DBHelper
 
 import scala.concurrent.Future
 import scala.util.{ Failure, Success, Try }
@@ -29,7 +30,7 @@ case class JsapiResultWrapper(
 )
 
 trait WeChatAppCtrl(maService: WxMaService, payService: WxPayService)(using
-  db: DbApi
+  db: DBHelper
 ) extends WXAppBasicController {
 
   private val realIp =
@@ -48,8 +49,8 @@ trait WeChatAppCtrl(maService: WxMaService, payService: WxPayService)(using
     .description("创建订单")
     .serverLogicSuccess { ip =>
       ???
-
     }
+
   wxAuth.put
     .in("order" / "pay" / path[Long]("orderId").description("order Id"))
     .name("微信小程序支付订单")
@@ -67,6 +68,20 @@ trait WeChatAppCtrl(maService: WxMaService, payService: WxPayService)(using
     .serverLogicSuccess { code =>
       Future.fromTry(_code2Session(code))
     }
+
+  val payNotify = wx.post
+    .in("notify" / "order")
+    .name("wx pay order notify")
+    .in(stringBody)
+    .out(stringBody)
+    .serverLogicSuccessPure(_orderCallback)
+
+  val refundNotify = wx.post
+    .in("notify" / "refund")
+    .name("wx refund order notify")
+    .in(stringBody)
+    .out(stringBody)
+    .serverLogicSuccessPure(???)
 
   private def _code2Session(code: String) = {
     Try {
@@ -116,10 +131,10 @@ trait WeChatAppCtrl(maService: WxMaService, payService: WxPayService)(using
       case _ =>
         Left(BadRequest("订单不存在或已支付"))
     }
-
   }
 
-  private def _callback(body: String): String = {
+  private def _orderCallback(body: String): String = {
+    logger.info(s"order callback: $body")
     Try {
       payService.parseOrderNotifyResult(body)
     } match {
@@ -136,9 +151,33 @@ trait WeChatAppCtrl(maService: WxMaService, payService: WxPayService)(using
         }
         WxPayNotifyResponse.success("OK")
       case Failure(exception) =>
-        logger.error(s"parse wx callback failure: body: ${body}", exception)
+        logger.error(s"parse wx callback failure: $body", exception)
         WxPayNotifyResponse.fail("Fail")
     }
+  }
 
+  private def _refundCallback(body: String): String = {
+    Try {
+      val result = payService.parseRefundNotifyResult(body)
+      logger.info(s"refund callback: $body")
+      val reqInfo = result.getReqInfo
+      val refundId = reqInfo.getOutRefundNo.drop(1).toLong
+      val orderId = reqInfo.getOutTradeNo.toLong
+      val refundStatus = reqInfo.getRefundStatus match {
+        case "SUCCESS"                => RefundStatus.Success
+        case "CHANGE" | "REFUNDCLOSE" => RefundStatus.Fail
+      }
+      db.transaction { _db =>
+        val result = _db.run(Order.close(orderId))
+        if (result > 0) {
+          _db.run(Refund.change(refundId, refundStatus))
+        }
+      }
+    } match {
+      case Success(_) => WxPayNotifyResponse.success("OK")
+      case Failure(e) =>
+        logger.error(s"parse wx callback failure: $body", e)
+        WxPayNotifyResponse.fail("Fail")
+    }
   }
 }

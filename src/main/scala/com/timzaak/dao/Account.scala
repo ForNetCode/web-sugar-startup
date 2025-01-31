@@ -3,9 +3,11 @@ package com.timzaak.dao
 import scalasql.query.Query
 import scalasql.*
 import scalasql.PostgresDialect.*
+import sttp.tapir.Schema.annotations.encodedName
 
 import java.time.OffsetDateTime
 
+@encodedName("Account")
 case class Account[T[_]](
   id: T[Int],
   openId: T[String],

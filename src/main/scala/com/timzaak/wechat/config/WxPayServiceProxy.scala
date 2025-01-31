@@ -14,10 +14,10 @@ case class WxPayConfig(
   privateKeyPath: String,
   privateCertPath: String,
   notifyUrl: String,
-  sandbox: Boolean = false
+  sandbox: Option[Boolean] = Some(false)
 )
 object WxPayConfig {
-  def apply(config: Config): WxPayConfig = config.as[WxPayConfig].toOption.get
+  def apply(config: Config): WxPayConfig = config.as[WxPayConfig].fold(e => throw e, identity)
 }
 
 class WxPayServiceProxy(conf: WxPayConfig) extends WxPayService {
@@ -32,7 +32,7 @@ class WxPayServiceProxy(conf: WxPayConfig) extends WxPayService {
     payConfig.setPrivateKeyPath(conf.privateKeyPath)
     payConfig.setPrivateCertPath(conf.privateCertPath)
 
-    payConfig.setUseSandboxEnv(conf.sandbox)
+    payConfig.setUseSandboxEnv(conf.sandbox.exists(identity))
 
     val wxPayService = WxPayServiceImpl()
     wxPayService.setConfig(payConfig)

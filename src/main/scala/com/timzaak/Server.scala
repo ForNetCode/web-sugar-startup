@@ -13,6 +13,7 @@ import scala.concurrent.{ Await, Future }
 import sttp.tapir.server.interceptor.cors.{ CORSConfig, CORSInterceptor }
 import sttp.tapir.redoc.bundle.RedocInterpreter
 import sttp.tapir.server.ServerEndpoint
+import sttp.tapir.server.interceptor.cors.CORSConfig.AllowedCredentials.{ Allow, Deny }
 
 import scala.concurrent.duration.*
 
@@ -26,11 +27,14 @@ import scala.concurrent.duration.*
       .serverLogicSuccessPure(_ => "pong"),
     authCtrl.test,
     authCtrl.session,
+    orderCtrl.orderList,
+    orderCtrl.order,
+    auditCtrl.auditList,
   )
 
   val swaggerRoute = NettyFutureServerInterpreter().toRoute(
     RedocInterpreter()
-      .fromEndpoints[Future](routes.map(_.endpoint), "Amiro API", "1.0")
+      .fromEndpoints[Future](routes.map(_.endpoint), "API", "1.0")
   )
 
   // https://github.com/softwaremill/tapir/issues/3225

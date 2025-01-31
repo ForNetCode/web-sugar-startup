@@ -25,8 +25,8 @@ create table if not exists user_info
 );
 
 comment on table user_info is '用户信息';
-
-create table if not exists "order"
+-- drop  table "orders";
+create table if not exists orders
 (
     id              bigserial primary key,
     user_id         integer        not null,
@@ -41,7 +41,30 @@ create table if not exists "order"
     updated_at      timestamptz    not null default now()
 );
 
-comment on column "order".info is '所有关于计算总价相关的信息';
-comment on column "order".note is '订单备注';
-comment on column "order".ref_id is '订单履约关联表';
-comment on column "order".status is '订单状态：0: 待支付，1:支付完成，待履约，2: 完成，3:取消（用户取消，支付超时）';
+comment on column orders.info is '所有关于计算总价相关的信息';
+comment on column orders.note is '订单备注';
+comment on column orders.ref_id is '订单履约关联表';
+comment on column orders.status is '订单状态';
+
+
+-- drop table refund;
+create table if not exists refund(
+  id bigserial primary key,
+  order_id  bigint not null,
+  pay jsonb not null,
+  status smallint not null default 0,
+  reason text,
+  created_at  timestamptz  not null default now(),
+  updated_at  timestamptz  not null default now()
+);
+create index if not exists refund_order_id_index on refund (order_id);
+
+drop table audit;
+create table if not exists audit(
+    id bigserial primary key,
+    module text not null,
+    ref_id  bigint not null,
+    action text not null,
+    description text,
+    created_at timestamptz not null default now()
+);

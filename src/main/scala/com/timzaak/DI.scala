@@ -1,30 +1,25 @@
 package com.timzaak
 
-import com.timzaak.controller.AuthCtrl
-import redis.clients.jedis.{
-  DefaultJedisClientConfig,
-  HostAndPort,
-  JedisPooled,
-  Protocol
-}
+import com.timzaak.controller.{ AuditCtrl, AuthCtrl, OrderCtrl }
+import com.timzaak.service.OrderService
+import com.timzaak.service.task.OrderExpireTask
+import com.timzaak.wechat.config.{ WxPayConfig, WxPayServiceProxy }
+import redis.clients.jedis.{ DefaultJedisClientConfig, HostAndPort, JedisPooled, Protocol }
 import very.util.config.WithConfig
 import io.circe.generic.auto.*
 import io.circe.config.syntax.*
 import scalasql.*
 import scalasql.PostgresDialect.*
 import very.util.keycloak.TapirOIDCAdapter
-import very.util.task.WithQuartz
+import very.util.persistence.DBHelper
+import very.util.task.{ QuartzManager, WithQuartz }
 import very.util.web.RedisSession
 
 object DI extends WithQuartz with WithConfig {
-  // init postgres database
-//  import com.timzaak.dao.DB
-//  object db extends DB
-//  given DB = db
 
-  // ConnectionPool.get().dataSource // This is to get javax.sql.DataSource
+  given QuartzManager = quartzManager
 
-  private val dbClient = DbClient.Connection(
+  given dbClient: DbClient = DbClient.Connection(
     java.sql.DriverManager.getConnection(
       config.getString("db.url"),
       config.getString("db.user"),
@@ -33,7 +28,8 @@ object DI extends WithQuartz with WithConfig {
     new scalasql.Config {}
   )
 
-  given db: DbApi = dbClient.getAutoCommitClientConnection
+  given DBHelper = DBHelper(dbClient)
+  // given db: DbApi = dbClient.getAutoCommitClientConnection
 
   protected lazy val jedisPool = JedisPooled(
     HostAndPort(
@@ -55,8 +51,19 @@ object DI extends WithQuartz with WithConfig {
 
   given TapirOIDCAdapter = oidcAdapter
 
+  object wxPayService extends WxPayServiceProxy(WxPayConfig(config.getConfig("wx.pay")))
+
+  object orderService extends OrderService
+
   object authCtrl extends AuthCtrl
 
+  object orderCtrl extends OrderCtrl(wxPayService)
+
+  object auditCtrl extends AuditCtrl
+
   // wx
+
+  // scheduler
+  OrderExpireTask.schedule(orderService)
 
 }

@@ -6,7 +6,7 @@ git clone --recursive git@github.com:ForNetCode/web-sugar-startup.git
 cd web-sugar-startup
 sbt run # -Dconfig.file=src/main/resources/application.conf -Dlogback.configurationFile=src/main/resources/logback.xml
 ```
-
+If you run in IDEA, must set VM Options: `-Dconfig.file=src/main/resources/application.conf` at `Run/Debug Configuration`
 
 
 `com.timzaak.Server` is the entry point. It inits web server and grpc server.
@@ -34,4 +34,7 @@ cd agent
 ```
 more info refer this doc: https://opentelemetry.io/docs/instrumentation/java/automatic/
 
+
+### Known Issues
+1. [[BUG]tapir_enumeratum doest not handle @customise annotation and shortEnum output String type.](https://github.com/softwaremill/tapir/issues/4292) 
 

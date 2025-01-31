@@ -26,11 +26,11 @@ Universal / mappings := {
 // enumeration need this
 ThisBuild / scalacOptions ++= Seq("-Yretain-trees")
 
-// exclude config files from jar
+// exclude config files from jar, this would protect putting config files into jar.
 unmanagedResources / excludeFilter := "*.conf"
 fork := true
 javaOptions ++= Seq(
-  "-Dconfig.file=src/main/resources/application.conf", // JVM argument example
+  "-Dconfig.file=src/main/resources/application.conf", // JVM argument
 )
 
 lazy val webSugar = RootProject(file("./web-sugar"))
