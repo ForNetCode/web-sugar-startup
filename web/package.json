@@ -42,7 +42,7 @@
     "build": "tsc && refine build",
     "start": "refine start",
     "refine": "refine",
-    "api": "openapi-typescript http://127.0.0.1:8080/docs/docs.yaml --enum --enum-values --dedupe-enums --root-types  -o src/api/schema.d.ts"
+    "api": "openapi-typescript http://127.0.0.1:8080/docs/docs.yaml --enum --enum-values --dedupe-enums --root-types -o src/api/schema.d.ts"
   },
   "browserslist": {
     "production": [

@@ -33,7 +33,7 @@ create table if not exists orders
     info            jsonb          not null,
     pay             jsonb          not null,
     ref_id          text           not null,
-    address_snap_id integer        not null,
+    -- address_snap_id integer        not null,
     total_amount    numeric(10, 2) not null,
     status          smallint       not null default 0,
     note            text           not null,

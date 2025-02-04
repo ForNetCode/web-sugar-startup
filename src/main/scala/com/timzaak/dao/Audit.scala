@@ -3,9 +3,12 @@ package com.timzaak.dao
 import com.timzaak.Module
 import scalasql.*
 import scalasql.PostgresDialect.*
+import sttp.tapir.Schema
+import sttp.tapir.Schema.annotations.encodedName
 
 import java.time.OffsetDateTime
 
+@encodedName("Audit")
 case class Audit[T[_]](
   id: T[Long],
   module: T[Module],
@@ -16,6 +19,8 @@ case class Audit[T[_]](
 )
 
 object Audit extends Table[Audit] {
+  given Schema[Audit[Sc]] = Schema.derived
+  
   def create(module: Module, refId: Int | Long, action: String, description: Option[String] = None)(using db: DbApi) = {
     val _refId = refId match {
       case v: Int  => v.toLong

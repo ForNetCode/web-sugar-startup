@@ -2,8 +2,15 @@ package com.timzaak.bash
 
 import com.typesafe.config.ConfigFactory
 import very.util.persistence.pgMigrate
-
 import very.util.persistence.transfer.*
+
+case class ScalasqlEntityParserDefined(parse: ScalasqlEntityParser) extends WriteToFile {
+  export parse.{ schema as _, * }
+  override def schema: String =
+    s"""${parse.schema}{
+       |  given Schema[${parse.name}[Sc]] = Schema.derived
+       |}""".stripMargin
+}
 
 object EntityGenerate {
 
@@ -20,8 +27,16 @@ object EntityGenerate {
     val model = Model(url, username, password)
     model.allTables().foreach { table =>
       if (table.name != "flyway_schema_history") {
-        ScalasqlEntityParser
-          .fromTable(Dialect.Postgres, table, "com.timzaak.dao")
+        ScalasqlEntityParserDefined(
+          ScalasqlEntityParser
+            .fromTable(
+              Dialect.Postgres,
+              table,
+              "com.timzaak.dao",
+              imports = List("sttp.tapir.Schema", "sttp.tapir.Schema.annotations.encodedName"),
+              annotations = List(s"@encodedName(${table.name})")
+            )
+        )
           .writeToFile("./src/main/scala")
       }
     }

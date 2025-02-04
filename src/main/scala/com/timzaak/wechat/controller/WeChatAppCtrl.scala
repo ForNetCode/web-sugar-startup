@@ -7,19 +7,21 @@ import com.github.binarywang.wxpay.bean.result.WxPayUnifiedOrderV3Result.JsapiRe
 import com.github.binarywang.wxpay.bean.result.enums.TradeTypeEnum
 import com.github.binarywang.wxpay.service.WxPayService
 import com.timzaak.dao.PayChannel.WeChat
-import com.timzaak.dao.{ Account, Order, PayInfo, RefundStatus, Refund }
+import com.timzaak.dao.{ Account, Order, PayInfo, Refund, RefundStatus }
 import com.timzaak.wechat.controller.basic.{ BadRequest, WXAppBasicController }
 import scalasql.*
-import sttp.model.HeaderNames
+import sttp.model.{ HeaderNames, StatusCode }
 import sttp.tapir.*
 import io.scalaland.chimney.dsl.*
-import io.circe.generic.auto.{ *, given }
 import sttp.tapir.generic.auto.*
+import sttp.tapir.Schema.annotations.encodedName
+import io.circe.generic.auto.*
 import very.util.persistence.DBHelper
 
 import scala.concurrent.Future
 import scala.util.{ Failure, Success, Try }
 
+@encodedName("JsapiResult")
 case class JsapiResultWrapper(
   appId: String,
   timeStamp: String,
@@ -47,6 +49,7 @@ trait WeChatAppCtrl(maService: WxMaService, payService: WxPayService)(using
   wxAuth.post
     .in("order" / "create")
     .description("创建订单")
+    .out(statusCode(StatusCode.Ok))
     .serverLogicSuccess { ip =>
       ???
     }

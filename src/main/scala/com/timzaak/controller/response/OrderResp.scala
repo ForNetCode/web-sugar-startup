@@ -10,7 +10,6 @@ case class OrderResp(
     userId:Int,
     pay:PayInfo,
     refId:String,
-    addressSnapId:Int,
     totalAmount: BigDecimal,
     status:OrderStatus,
     createdAt:OffsetDateTime,

@@ -1,5 +1,25 @@
 ### Permission
 基于 https://casbin.org/ 做即可。 采用的 model 一般是 [ACL with superuser](https://casbin.org/docs/supported-models)，方便理解。
+若是多租户，则采用 RBAC with domains/tenants 和 ACL with superuser 的改造。
+
+```config
+[request_definition]
+r = user, dom, resource
+
+[policy_definition]
+p = role, dom, resource
+
+[role_definition]
+g = _, _, _
+g2 = _, _
+
+[policy_effect]
+e = some(where (p.eft == allow))
+
+[matchers]
+m = g(r.user, p.role, r.dom) && r.dom == p.dom && (r.resource == p.resource || p.role == 'admin')
+```
+
 数据库采用 [Jdbc Adapter](https://casbin.org/docs/adapters) 即可，缓存 + 数据库 目前没有集成好的，需要自己写。
 
 Tapir 没有集成，需要基于 [jcasbin](https://github.com/casbin/jcasbin) 自行编写，在 `UserExtractInterceptor` 之后，挂上 `PermissionFilterInterceptor`。

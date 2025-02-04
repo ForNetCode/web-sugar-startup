@@ -36,6 +36,7 @@ async function handleRequest(request: Request): Promise<Response> {
     });
   } 
   
+  
   const targetUrl = `https://${pathname}`;
 
   try {
@@ -68,6 +69,8 @@ async function handleRequest(request: Request): Promise<Response> {
 };
 
 Deno.serve(handleRequest); 
+
+// like https://YOUR-DOMAIN/api.openai.com/v1/chat/completions
 ```
 
 ### 流量转发本地
@@ -81,5 +84,9 @@ Deno.serve(handleRequest);
 `ssh -R [远程端口]:[本地地址]:[本地端口] [用户名]@[远程服务器]`
 
 #### 无外网IP
-走 Cloudflare Zero Trust Tunnel.
+走 Cloudflare Zero Trust Tunnel. 免费用户必须把NS解析交给 Cloudflare，企业版可以走CNAME。
 参考： https://zhuanlan.zhihu.com/p/621870045
+
+
+### 免费AI使用
+GROQ 提供了免费使用 AI 的 API，但是需要注册账号。可以快速使用 deepseek-r1-distill-llama-70b。

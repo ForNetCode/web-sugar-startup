@@ -1,17 +1,16 @@
 package com.timzaak.dao
 
 import enumeratum.values.*
-import org.postgresql.util.PGobject
 import scalasql.*
 import scalasql.PostgresDialect.*
 import sttp.tapir.Schema
 import sttp.tapir.Schema.annotations.encodedName
-import very.util.web.JsonConfig
 import sttp.tapir.generic.auto.*
 import sttp.tapir.json.circe.*
 import sttp.tapir.docs.apispec.DocsExtensionAttribute.*
+import very.util.persistence.ScalaSQLExtra.{ intEnumTypeMapper, jsonbTypeMapper, shortEnumTypeMapper }
+import very.util.web.TapirExtra.{ intEnumSchema, shortEnumSchema }
 
-import java.sql.{ JDBCType, PreparedStatement, ResultSet }
 import java.time.OffsetDateTime
 
 @encodedName("Order")
@@ -21,7 +20,7 @@ case class Order[T[_]](
 //info: T[Any],
   pay: T[PayInfo],
   refId: T[String],
-  addressSnapId: T[Int],
+  // addressSnapId: T[Int],
   totalAmount: T[BigDecimal],
   status: T[OrderStatus],
   note: T[String],
@@ -39,21 +38,10 @@ object OrderStatus extends ShortEnum[OrderStatus] with ShortCirceEnum[OrderStatu
   case object Cancel extends OrderStatus(4)
   val values = findValues
 
-  import sttp.tapir.codec.enumeratum.schemaForShortEnumEntry
-  given Schema[OrderStatus] = {
-    schemaForShortEnumEntry[OrderStatus]
-      .docsExtension("x-enum-varnames", List("UnPaid", "Paid", "Finish", "Refunding", "Cancel"))
-      .format("int16")
-  }
+  given Schema[OrderStatus] = shortEnumSchema[OrderStatus]
 
-  given orderStatusTypeMapper: TypeMapper[OrderStatus] =
-    new TypeMapper[OrderStatus] {
-      def jdbcType: JDBCType = JDBCType.TINYINT
-      def get(r: ResultSet, idx: Int): OrderStatus =
-        OrderStatus.withValue(r.getShort(idx))
-      def put(r: PreparedStatement, idx: Int, v: OrderStatus): Unit =
-        r.setShort(idx, v.value)
-    }
+  given TypeMapper[OrderStatus] = shortEnumTypeMapper[OrderStatus]
+
 }
 
 // @customise(s =>s.docsExtension("x-enum-varnames", List("WeChat", "Alipay")))
@@ -63,18 +51,18 @@ object PayChannel extends IntEnum[PayChannel] with IntCirceEnum[PayChannel] {
   case object Alipay extends PayChannel(1)
   val values = findValues
 
-  import sttp.tapir.codec.enumeratum.schemaForIntEnumEntry
-  given Schema[PayChannel] = schemaForIntEnumEntry[PayChannel]
-    .docsExtension("x-enum-varnames", List("WeChat", "Alipay"))
+  given Schema[PayChannel] = intEnumSchema[PayChannel]
+
+  given TypeMapper[PayChannel] = intEnumTypeMapper[PayChannel]
 }
 
 case class PayInfo(channel: PayChannel, transactionId: String)
 
 object PayInfo {
-  import io.circe.syntax.*
   import io.circe.generic.auto.*
-  import io.circe.parser.*
 
+  given TypeMapper[PayInfo] = jsonbTypeMapper[PayInfo]
+  /*
   given payInfoTypeMapper: TypeMapper[PayInfo] = new TypeMapper[PayInfo] {
     override def jdbcType: JDBCType = JDBCType.OTHER
 
@@ -88,6 +76,8 @@ object PayInfo {
       r.setObject(idx, jsonObject)
     }
   }
+
+   */
 }
 
 object Order extends Table[Order] {
@@ -95,6 +85,7 @@ object Order extends Table[Order] {
   override def tableName: String = "orders"
 
   given Schema[Order[Sc]] = Schema.derived
+
   def paySuccess(orderId: Long, payInfo: PayInfo) = Order
     .update(v => v.id === orderId && v.status === OrderStatus.UnPaid)
     .set(

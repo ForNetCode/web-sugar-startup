@@ -68,10 +68,59 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/order/{orderId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getOrderOrderid"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/audit/list": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getAuditList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** Audit */
+        Audit: {
+            /** Format: int64 */
+            id: number;
+            module: components["schemas"]["Module"];
+            /** Format: int64 */
+            refId: number;
+            action: string;
+            description?: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        /**
+         * Module
+         * @enum {string}
+         */
+        Module: Module;
         /** Order */
         Order: {
             /** Format: int64 */
@@ -80,8 +129,6 @@ export interface components {
             userId: number;
             pay: components["schemas"]["PayInfo"];
             refId: string;
-            /** Format: int32 */
-            addressSnapId: number;
             totalAmount: number;
             status: components["schemas"]["OrderStatus"];
             note: string;
@@ -92,7 +139,7 @@ export interface components {
         };
         /**
          * OrderStatus
-         * Format: int32
+         * Format: int16
          * @enum {integer}
          */
         OrderStatus: OrderStatus;
@@ -114,6 +161,8 @@ export interface components {
     headers: never;
     pathItems: never;
 }
+export type SchemaAudit = components['schemas']['Audit'];
+export type SchemaModule = components['schemas']['Module'];
 export type SchemaOrder = components['schemas']['Order'];
 export type SchemaOrderStatus = components['schemas']['OrderStatus'];
 export type SchemaPayChannel = components['schemas']['PayChannel'];
@@ -257,12 +306,115 @@ export interface operations {
             };
         };
     };
+    getOrderOrderid: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Order"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    getAuditList: {
+        parameters: {
+            query?: {
+                /**
+                 * @description Module Value
+                 * @example order
+                 */
+                module?: string;
+                refId?: number;
+                /** @description start */
+                _start?: number;
+                /** @description end */
+                _end?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Audit"][];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+}
+export enum Module {
+    Order = "order"
 }
 export enum OrderStatus {
     UnPaid = "0",
     Paid = "1",
     Finish = "2",
-    Cancel = "3"
+    Refunding = "3",
+    Cancel = "4"
 }
 export enum PayChannel {
     WeChat = 0,

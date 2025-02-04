@@ -1,11 +1,3 @@
-create table users(
-                      id serial primary key,
-                      name text,
-                      mobile text not null,
-                      password text not null,
-                      created_at timestamp with time zone,
-                      updated_at timestamp with time zone
-);
 --  role permission ref to Cloud Policy ， this would to cached
 create table roles(
                       id serial primary key,

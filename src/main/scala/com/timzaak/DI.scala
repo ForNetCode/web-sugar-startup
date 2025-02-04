@@ -4,6 +4,7 @@ import com.timzaak.controller.{ AuditCtrl, AuthCtrl, OrderCtrl }
 import com.timzaak.service.OrderService
 import com.timzaak.service.task.OrderExpireTask
 import com.timzaak.wechat.config.{ WxPayConfig, WxPayServiceProxy }
+import com.zaxxer.hikari.HikariDataSource
 import redis.clients.jedis.{ DefaultJedisClientConfig, HostAndPort, JedisPooled, Protocol }
 import very.util.config.WithConfig
 import io.circe.generic.auto.*
@@ -19,6 +20,13 @@ object DI extends WithQuartz with WithConfig {
 
   given QuartzManager = quartzManager
 
+  private val dataSource = HikariDataSource()
+  dataSource.setJdbcUrl(config.getString("db.url"))
+  dataSource.setUsername(config.getString("db.user"))
+  dataSource.setPassword(config.getString("db.password"))
+  given dbClient: DbClient = DbClient.DataSource(dataSource)
+
+  /*
   given dbClient: DbClient = DbClient.Connection(
     java.sql.DriverManager.getConnection(
       config.getString("db.url"),
@@ -27,6 +35,7 @@ object DI extends WithQuartz with WithConfig {
     ),
     new scalasql.Config {}
   )
+   */
 
   given DBHelper = DBHelper(dbClient)
   // given db: DbApi = dbClient.getAutoCommitClientConnection
@@ -45,7 +54,7 @@ object DI extends WithQuartz with WithConfig {
   )
 
   given _adminSessionProvider: AdminSessionProvider =
-    new RedisSession[AdminUserInfo](jedisPool) {}
+    new RedisSession[AdminUserInfo](jedisPool, prefix = "a:") {}
 
   object oidcAdapter extends TapirOIDCAdapter()
 
