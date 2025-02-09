@@ -59,7 +59,7 @@ create table if not exists refund(
 );
 create index if not exists refund_order_id_index on refund (order_id);
 
-drop table audit;
+-- drop table audit;
 create table if not exists audit(
     id bigserial primary key,
     module text not null,

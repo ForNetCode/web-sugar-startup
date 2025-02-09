@@ -90,3 +90,18 @@ Deno.serve(handleRequest);
 
 ### 免费AI使用
 GROQ 提供了免费使用 AI 的 API，但是需要注册账号。可以快速使用 deepseek-r1-distill-llama-70b。
+
+### 安全
+#### 依赖包安全
+
+```scala
+addSbtPlugin("org.owasp" % "dependency-check-sbt" % "*")
+
+enablePlugins(DependencyCheckPlugin)
+
+dependencyCheck {
+  failBuildOnCVSS = Some(7) // CVSS评分高于7时，构建失败
+  suppressionFile = Some(file("dependency-check-suppressions.xml")) // 使用 suppression 文件
+  format = "HTML" // 输出格式，可以是 HTML 或 JSON
+}
+```

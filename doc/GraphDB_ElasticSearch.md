@@ -21,3 +21,15 @@ docker run -it --rm \
 ### Scala Client
 
 https://neotypes.github.io/neotypes/ 依赖了shapeless，但提供很好的语法糖。
+
+## ElasticSearch
+客户端： https://github.com/Philippus/elastic4s ，有较好的json库适配。
+Java Client API已经函数化，但 Json 序列化强绑定，需要在 Jackson 上做文章，需要额外改写。
+
+考虑到易读性，最好还是引入 [Jsonnet](https://jsonnet.org/) 做复杂 Json 请求参数生成，会更易读一些。
+
+理解ES可参考： https://github.com/timzaak/blog/issues/88
+
+
+### CDC to ES
+Debezium 是一种较高成本方案，还有一种就是手动定时查变更数据，手动改ES，虽然慢点，但初期基本够用，一般5分钟延迟即可

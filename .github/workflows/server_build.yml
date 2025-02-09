@@ -19,7 +19,7 @@ jobs:
       - uses: coursier/cache-action@v6
       - uses: coursier/setup-action@v1
         with:
-          jvm: temurin:1.17
+          jvm: temurin:1.21
 #      -
 #        name: Login to GithubPackages
 #        uses: docker/login-action@v2

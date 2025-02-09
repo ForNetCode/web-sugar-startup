@@ -45,7 +45,7 @@ lazy val backend = project
     libraryDependencies ++= wxLib ++ Seq(
       "org.postgresql" % "postgresql" % "42.7.5",
       "org.casbin" % "jcasbin" % "1.79.0" % Test,
-      "org.scalameta" %% "munit" % "1.0.4" % Test
+      "org.scalameta" %% "munit" % "1.1.0" % Test
     ),
     // Compile / mainClass := Some("com.timzaak.app")
   )
