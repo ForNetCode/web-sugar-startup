@@ -2,6 +2,7 @@
 基于 https://casbin.org/ 做即可。 采用的 model 一般是 [ACL with superuser](https://casbin.org/docs/supported-models)，方便理解。
 若是多租户，则采用 RBAC with domains/tenants 和 ACL with superuser 的改造。
 
+这是简略版本的 RBAC with domains/tenants。
 ```config
 [request_definition]
 r = user, dom, resource
@@ -11,13 +12,28 @@ p = role, dom, resource
 
 [role_definition]
 g = _, _, _
-g2 = _, _
 
 [policy_effect]
 e = some(where (p.eft == allow))
 
 [matchers]
 m = g(r.user, p.role, r.dom) && r.dom == p.dom && (r.resource == p.resource || p.role == 'admin')
+```
+这是做MQTT消息订阅类型的， 但实际情况topic构造规则就包含判定条件，casbin 等权限认证框架不合适
+```config
+[request_definition]
+r = user, topic, act
+
+[policy_definition]
+p = user_role, topic, act
+
+[policy_effect]
+e = some(where (p.eft == allow))
+[role_definition]
+g = _, _
+
+[matchers]
+m = ((r.user == p.user_role || g(r.user, p.user_role)) && keyMatch(r.topic, p.topic) && regexMatch(r.act, p.act))
 ```
 
 数据库采用 [Jdbc Adapter](https://casbin.org/docs/adapters) 即可，缓存 + 数据库 目前没有集成好的，需要自己写。
@@ -39,6 +55,7 @@ keycloak 提供 policy enforcer 鉴权方案，但实际用的时候，policy en
 
 集成可以基于 pac4j 来做，Keycloak 官方已不再支持 keycloak-java-adapter。
 对于前后端分离的项目，最简单的 Auth 对接方案
+
 1. 在keycloak上，针对前端创建 clientId, `Client authentication` 为 Off。清理 `Client scopes` 只保留 roles、{clientId}-dedicated、profile。
 2. 前端引入 keycloak-js package，并将从 keycloak 获取的 Token 作为 `Authorization: Bearer {Token}` 传递后端。
 3. 后端通过 {keycloak-base-url}/realms/{realm}/protocol/openid-connect/certs 获取 JWKS, 并进行校验。可获得 OpenId + Role
@@ -46,6 +63,7 @@ keycloak 提供 policy enforcer 鉴权方案，但实际用的时候，policy en
 针对 Token 使用优化点可以有：
 1. 后端 增加 Token => (OpenId, roles) Cache
 2. 后端依据 Token 获取信息验证后，重新生成 sessionId => (OpenId,  roles) 映射，前端只需要使用SessionId 即可。
+
 
 参考： 
 [Keycloak 插件开发系列](https://github.com/kavahub/keycloak?tab=readme-ov-file)

@@ -37,7 +37,6 @@ import {
 } from "./pages/blog-posts";
 import { Login } from "./pages/login";
 import axiosInstance, {registerSession} from "./api/dataProvider";
-import keycloak from './api/keycloak'
 
 function App() {
   const { keycloak, initialized } = useKeycloak();
