@@ -1,6 +1,6 @@
 import sbt.*
 
-val scala3Version = "3.6.2"
+val scala3Version = "3.7.1"
 
 //Compile / PB.targets := Seq(
 //  scalapb.gen() -> (Compile / sourceManaged).value / "scalapb"
@@ -33,9 +33,9 @@ lazy val backend = project
     version := "0.1.0",
     scalaVersion := scala3Version,
     libraryDependencies ++= Seq(
-      "org.postgresql" % "postgresql" % "42.7.4",
-      "org.casbin" % "jcasbin" % "1.78.0",
-      "org.scalameta" %% "munit" % "1.0.4" % Test
+      "org.postgresql" % "postgresql" % "42.7.7",
+      "org.casbin" % "jcasbin" % "1.82.0",
+      "org.scalameta" %% "munit" % "1.1.1" % Test
     ),
     // Compile / mainClass := Some("com.timzaak.app")
   )

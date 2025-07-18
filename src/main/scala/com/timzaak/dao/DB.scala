@@ -1,14 +1,21 @@
 package com.timzaak.dao
 
 import very.util.config.WithConfig
-import scalikejdbc.{ AutoSession, DBSession }
-import scalikejdbc.config.DBs
+import very.util.persistence.DBHelper
+import scalasql.DbClient
+import com.zaxxer.hikari.HikariDataSource
 
 /**
  * Init Database Connection
  */
 trait DB extends WithConfig {
-  DBs.setup()
+  import scalasql.PostgresDialect.*
+  private val dataSource = HikariDataSource()
+  dataSource.setJdbcUrl(config.getString("db.url"))
+  dataSource.setUsername(config.getString("db.user"))
+  dataSource.setPassword(config.getString("db.password"))
 
-  given session: DBSession = AutoSession
+  given dbClient: DbClient = DbClient.DataSource(dataSource)
+
+  given DBHelper = DBHelper(dbClient)
 }

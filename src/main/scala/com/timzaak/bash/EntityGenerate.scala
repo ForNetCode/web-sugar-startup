@@ -2,7 +2,6 @@ package com.timzaak.bash
 
 import com.typesafe.config.ConfigFactory
 import very.util.persistence.pgMigrate
-import very.util.persistence.scalikejdbc.mapper.{CodeGenerator, DateTimeClass, GeneratorConfig, Model}
 
 object EntityGenerate {
 
@@ -10,31 +9,12 @@ object EntityGenerate {
     pgMigrate(ConfigFactory.load().getConfig("db.default"))
   }
 
+  // Note: Entity generation is now handled manually with ScalaSQL
+  // You can define your table schemas directly using ScalaSQL's Table definitions
   @main def generateEntity: Unit = {
-    val config = ConfigFactory.load()
-    val url = config.getString("db.default.url")
-    val username = config.getString("db.default.user")
-    val password = config.getString("db.default.password")
-    val driver = config.getString("db.default.driver")
-    Class.forName(driver)
-
-    val model = Model(url, username, password)
-
-    val generatorConfig = GeneratorConfig(
-      packageName = "com.timzaak.entity",
-      dateTimeClass = DateTimeClass.OffsetDateTime,
-      daoExtendImport = Some("very.util.persistence.scalikejdbc.Dao")
-    )
-    // where table to generate
-    val tables:Map[String, String] = Map(
-      //      "consignor"-> "Consignor",
-      //      "fee_config" -> "FeeConfig",
-    )
-    model.allTables("public").foreach { table =>
-      if (tables.contains(table.name)) {
-        new CodeGenerator(table, None)(generatorConfig.copy(tableNameToClassName = (a: String) => tables(a))).writeModel()
-      }
-    }
+    println("Entity generation with ScalaSQL should be done manually.")
+    println("Please define your table schemas using ScalaSQL Table definitions.")
+    println("See ScalaSQL documentation for examples: https://github.com/com-lihaoyi/scalasql")
   }
 
 }
